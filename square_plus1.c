@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
 int main(){
 
     int status1, status2;
@@ -43,18 +42,14 @@ int main(){
         close(pipe_c2_p[1]);
 
         int buffer;        
-        // Read the value from the parent into child1 
-        if(read(pipe_p_c1[0], &buffer, sizeof(int)) == -1){
-            perror("Child 1: Read failed");
-            exit(EXIT_FAILURE);
-        }
-        // Square the val from the parent
-        buffer *= buffer;
         
-        // Write the value to child2
-        if(write(pipe_c1_c2[1], &buffer, sizeof(int)) == -1){
-            perror("Child 1: Write Failed");
-            exit(EXIT_FAILURE);
+        // If there is still something to real, it will continue to do so
+        while(read(pipe_p_c1[0], &buffer, sizeof(int)) > 0) {
+            buffer *= buffer;  // Square the value
+            if (write(pipe_c1_c2[1], &buffer, sizeof(int)) == -1) {
+                perror("Child 1: Write failed");
+                exit(EXIT_FAILURE);
+            }
         }
         close(pipe_p_c1[0]);       
         close(pipe_c1_c2[1]);
@@ -78,19 +73,16 @@ int main(){
             close(pipe_p_c1[1]);
 
             // Child 1 sends child 2 val 
-            int buffer;        
-            if(read(pipe_c1_c2[0], &buffer, sizeof(int)) == -1){
-                perror("Child 2: Read failed");
-                exit(EXIT_FAILURE);
+            int buffer;
+            // If there is still something to real, it will continue to do so
+            while(read(pipe_c1_c2[0], &buffer, sizeof(int)) > 0) {
+                buffer += 1;  // Add one to the value
+                if (write(pipe_c2_p[1], &buffer, sizeof(int)) == -1) {
+                    perror("Child 2: Write failed");
+                    exit(EXIT_FAILURE);
+                }
             }
-            // Add 1 to buffer
-            buffer += 1;
-        
-            // Write value from child2 to parent
-            if(write(pipe_c2_p[1], &buffer, sizeof(int)) == -1){
-                perror("Child 2: Write Failed");
-                exit(EXIT_FAILURE);
-            }
+
             close(pipe_c1_c2[0]);
             close(pipe_c2_p[1]);      
             exit(0);
@@ -109,7 +101,6 @@ int main(){
             while(1){
                 printf("Enter an Integer (CRTL+D to exit): ");
                 if(scanf("%d", &val) != 1){
-                    printf("hello\n");
                     break;
                 }
                 // Write val to the child 1    
@@ -123,8 +114,7 @@ int main(){
                     perror("Child 2: Read failed");
                     exit(EXIT_FAILURE);
                 }
-            
-                printf("Square + 1: %d\n", val);                      
+                printf("Result: %d\n", val);                      
             }
             
             // Close the read side
@@ -142,20 +132,6 @@ int main(){
                 exit(EXIT_FAILURE);
             }
         }
-    
     }
-
     return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
