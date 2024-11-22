@@ -9,6 +9,8 @@
 #define BUFFER_SIZE 1024
 #define SERVER_IP "127.0.0.1"
 
+int EMPTY_FLAG = 0;
+
 void run_server() {
     int server_fd, new_socket;
     struct sockaddr_in address;
@@ -53,18 +55,29 @@ void run_server() {
         // Reset buffer for new data
         memset(buffer, 0, BUFFER_SIZE);
         int buff_read = read(new_socket, buffer, BUFFER_SIZE);
-        
+        printf("test 1\n");
         // If read worked
         if(buff_read > 0){
-            // Send message back to client
-            send(new_socket, buffer, BUFFER_SIZE, 0);
-            printf("Message sent to client\n");
+            printf("test 2\n");
+            
+            // If input is empty 
+            if(EMPTY_FLAG == 1){    
+                printf("Server: Empty Message\n");   
+                send(new_socket, "(empty input)", strlen("(empty input)"), 0);
+            }
+            else {
+                // Send message back to client
+                send(new_socket, buffer, BUFFER_SIZE, 0);
+                printf("Message sent to client\n");
+            }
         }
+        
         else if(buff_read == 0){
             printf("Server: Client Requested Exit\n");
             break;
         }
 
+        printf("test 3\n");
     }
     // Close sockets
     close(new_socket);
@@ -104,7 +117,14 @@ void run_client() {
             send(sock, "", 0,0);
             break;
         }
-        message[strcspn(message, "\n")] = '\0';
+        message[strcspn(message, "\n")] = '\0'; 
+        
+        // If message is empty
+        if(strlen(message) == 0){
+            printf("Client: Empty input \n");           
+            EMPTY_FLAG = 1;
+        }
+
         // Send data to server
         send(sock, message, strlen(message), 0);
         printf("Message sent to server\n");
@@ -114,7 +134,7 @@ void run_client() {
 
         // Read data from server
         if(read(sock, buffer, BUFFER_SIZE) > 0){
-            printf("Server: %s\n", buffer);
+            printf("From Server: %s\n", buffer);
         }
     }
 
