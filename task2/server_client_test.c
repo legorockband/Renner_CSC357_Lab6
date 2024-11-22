@@ -9,8 +9,6 @@
 #define BUFFER_SIZE 1024
 #define SERVER_IP "127.0.0.1"
 
-int EMPTY_FLAG = 0;
-
 void run_server() {
     int server_fd, new_socket;
     struct sockaddr_in address;
@@ -55,15 +53,14 @@ void run_server() {
         // Reset buffer for new data
         memset(buffer, 0, BUFFER_SIZE);
         int buff_read = read(new_socket, buffer, BUFFER_SIZE);
-        printf("test 1\n");
         // If read worked
         if(buff_read > 0){
-            printf("test 2\n");
             
             // If input is empty 
-            if(EMPTY_FLAG == 1){    
+            if(strlen(buffer)==0){  
                 printf("Server: Empty Message\n");   
-                send(new_socket, "(empty input)", strlen("(empty input)"), 0);
+                continue;
+                //send(new_socket, "(empty input)", strlen("(empty input)"), 0);
             }
             else {
                 // Send message back to client
@@ -122,7 +119,7 @@ void run_client() {
         // If message is empty
         if(strlen(message) == 0){
             printf("Client: Empty input \n");           
-            EMPTY_FLAG = 1;
+            continue;
         }
 
         // Send data to server
@@ -164,5 +161,3 @@ int main() {
 
     return 0;
 }
-
-
