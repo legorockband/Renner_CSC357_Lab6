@@ -49,15 +49,22 @@ void run_server() {
         close(server_fd);
         exit(EXIT_FAILURE);
     }
+    while(1){
+        // Reset buffer for new data
+        memset(buffer, 0, BUFFER_SIZE);
+        // Read data from client
+        if(read(new_socket, buffer, BUFFER_SIZE) > 0){
+            // If the buffer is empty
+            if(buffer[0] == '\0'){
+                printf("Exit Request\n");
+                break;
+            }           
+            // Send message back to client
+            send(new_socket, buffer, BUFFER_SIZE, 0);
+            printf("Message sent to client\n");
+        }
 
-    // Read data from client
-    read(new_socket, buffer, BUFFER_SIZE);
-    //printf("Client: %s\n", buffer);
-
-    // Send message back to client
-    send(new_socket, buffer, BUFFER_SIZE, 0);
-    printf("Message sent to client\n");
-
+    }
     // Close sockets
     close(new_socket);
     close(server_fd);
@@ -87,20 +94,28 @@ void run_client() {
         exit(EXIT_FAILURE);
     }
     while(1){
-    printf("Enter Input: ");
-    // Read Input from the user
-    if(!fgets(message, sizeof(message), stdin)){
-        break;
+        printf("Enter Input: ");
+        // Read Input from the user
+        if(!fgets(message, sizeof(message), stdin)){
+            // Set message to null
+            memset(message, '\0', sizeof(message));
+            printf("\nClient Exit Request\n");
+            break;
+        }
+        message[strcspn(message, "\n")] = '\0';
+        // Send data to server
+        send(sock, message, strlen(message), 0);
+        printf("Message sent to server\n");
+        
+        // Clear Buffer
+        memset(buffer, 0, BUFFER_SIZE);
+
+        // Read data from server
+        if(read(sock, buffer, BUFFER_SIZE) > 0){
+            printf("Server: %s\n", buffer);
+        }
     }
 
-    // Send data to server
-    send(sock, message, strlen(message), 0);
-    printf("Message sent to server\n");
-
-    // Read data from server
-    read(sock, buffer, BUFFER_SIZE);
-    printf("Server: %s\n", buffer);
-    }
     // Close socket
     close(sock);
 }
