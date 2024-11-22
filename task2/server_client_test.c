@@ -52,16 +52,17 @@ void run_server() {
     while(1){
         // Reset buffer for new data
         memset(buffer, 0, BUFFER_SIZE);
-        // Read data from client
-        if(read(new_socket, buffer, BUFFER_SIZE) > 0){
-            // If the buffer is empty
-            if(buffer[0] == '\0'){
-                printf("Exit Request\n");
-                break;
-            }           
+        int buff_read = read(new_socket, buffer, BUFFER_SIZE);
+        
+        // If read worked
+        if(buff_read > 0){
             // Send message back to client
             send(new_socket, buffer, BUFFER_SIZE, 0);
             printf("Message sent to client\n");
+        }
+        else if(buff_read == 0){
+            printf("Server: Client Requested Exit\n");
+            break;
         }
 
     }
@@ -94,12 +95,13 @@ void run_client() {
         exit(EXIT_FAILURE);
     }
     while(1){
-        printf("Enter Input: ");
+        printf("Enter Input (CTRL+D for exit): ");
         // Read Input from the user
         if(!fgets(message, sizeof(message), stdin)){
             // Set message to null
-            memset(message, '\0', sizeof(message));
-            printf("\nClient Exit Request\n");
+            printf("\nClient: Exit Detected\n");
+            // Send exit request to server
+            send(sock, "", 0,0);
             break;
         }
         message[strcspn(message, "\n")] = '\0';
