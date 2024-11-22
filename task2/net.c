@@ -16,7 +16,8 @@ int create_service(short port)
    int fd;  /* listen on sock_fd, new connection on new_fd */
    struct sockaddr_in local_addr;    /* my address information */
    int yes=1;
-
+    
+   // TCP 
    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
    {
       return -1;

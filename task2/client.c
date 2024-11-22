@@ -4,7 +4,7 @@
 #include <netdb.h>
 #include <unistd.h>
 
-#define PORT 2828
+#define PORT 23045
 
 #define MIN_ARGS 2
 #define MAX_ARGS 2
@@ -31,9 +31,13 @@ void send_request(int fd)
    char *line = NULL;
    size_t size;
    ssize_t num;
-
-   while ((num = getline(&line, &size, stdin)) >= 0)
+   //Enter data in 
+   while (1)
    {
+    printf("Enter Line: ");
+    if((num = getline(&line, &size, stdin)) >= 0){
+        break;
+    }
       write(fd, line, num);
    }
 
