@@ -12,31 +12,6 @@
 
 #define USAGE_STRING "usage: %s <server address>\n"
 
-// Get the value back from server
-void handle_request(int nfd)
-{
-   FILE *network = fdopen(nfd, "r");
-   char *line = NULL;
-   size_t size;
-   ssize_t num;
-
-   if (network == NULL)
-   {
-      perror("fdopen");
-      close(nfd);
-      return;
-   }
-
-   while ((num = getline(&line, &size, network)) >= 0)
-   {
-      printf("Back from Server: %s", line);
-   }
-
-   free(line);
-   fclose(network);
-}
-
-
 void validate_arguments(int argc, char *argv[])
 {
     if (argc == 0)
@@ -51,17 +26,26 @@ void validate_arguments(int argc, char *argv[])
     }
 }
 
-void send_request(int fd)
+void send_receive_request(int fd)
 {
    char *line = NULL;
    size_t size;
    ssize_t num;
+   char response[1024];
    //Read input from user and Send Data to Server 
    while ((num = getline(&line, &size, stdin)) >= 0 )
    {
       // Fd is file descriptor for server
       write(fd, line, num);
-      handle_request(fd);
+      // Read from server for data
+      ssize_t from_serv = read(fd, response, sizeof(response) - 1);
+      // If from_serv reads a value
+      if(from_serv > 0){
+        // Need to null terminate since read doesn't get it
+        response[from_serv] = '\0';
+        printf("Back From Server: %s", response);
+
+      }   
    }
 
    free(line);
@@ -114,7 +98,7 @@ int main(int argc, char *argv[])
       int fd = connect_to_server(host_entry);
       if (fd != -1)
       {
-         send_request(fd);
+         send_receive_request(fd);
          // Get the value back from the server and print it in the client
         // handle_request(fd);
          close(fd);

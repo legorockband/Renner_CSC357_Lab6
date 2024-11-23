@@ -5,23 +5,6 @@
 #include <unistd.h>
 
 #define PORT 23045
-/*
-// Send request back to client 
-void send_request(int fd)
-{
-   char *line = NULL;
-   size_t size;
-   ssize_t num;
-
-   while ((num = getline(&line, &size, stdin)) >= 0)
-   {
-      write(fd, line, num);
-   }
-
-   free(line);
-}
-*/
-
 
 void handle_request(int nfd)
 {
