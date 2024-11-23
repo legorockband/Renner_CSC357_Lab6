@@ -12,6 +12,31 @@
 
 #define USAGE_STRING "usage: %s <server address>\n"
 
+// Get the value back from server
+void handle_request(int nfd)
+{
+   FILE *network = fdopen(nfd, "r");
+   char *line = NULL;
+   size_t size;
+   ssize_t num;
+
+   if (network == NULL)
+   {
+      perror("fdopen");
+      close(nfd);
+      return;
+   }
+
+   while ((num = getline(&line, &size, network)) >= 0)
+   {
+      printf("Back from Server: %s", line);
+   }
+
+   free(line);
+   fclose(network);
+}
+
+
 void validate_arguments(int argc, char *argv[])
 {
     if (argc == 0)
@@ -31,14 +56,12 @@ void send_request(int fd)
    char *line = NULL;
    size_t size;
    ssize_t num;
-   //Enter data in 
-   while (1)
+   //Read input from user and Send Data to Server 
+   while ((num = getline(&line, &size, stdin)) >= 0 )
    {
-    printf("Enter Line: ");
-    if((num = getline(&line, &size, stdin)) >= 0){
-        break;
-    }
+      // Fd is file descriptor for server
       write(fd, line, num);
+      handle_request(fd);
    }
 
    free(line);
@@ -92,6 +115,8 @@ int main(int argc, char *argv[])
       if (fd != -1)
       {
          send_request(fd);
+         // Get the value back from the server and print it in the client
+        // handle_request(fd);
          close(fd);
       }
    }
